@@ -1,4 +1,4 @@
-fluent-bit-bridge 
+fluent-bit-bridge code 
 a k8s deployed bridge that connects fluent-bit to mongo to shuttle messages into collections
 LOG ROUTING:
 - Pods labeled `type: api` OR `type: service` → mongo: logging/logs  
