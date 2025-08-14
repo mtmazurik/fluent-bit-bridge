@@ -1,0 +1,55 @@
+fluent-bit-bridge 
+a k8s deployed bridge that connects fluent-bit to mongo to shuttle messages into collections
+LOG ROUTING:
+- Pods labeled `type: api` OR `type: service` → mongo: logging/logs  
+- Everything else (Kong, system pods, etc.) → mongo: logging/system-logs
+
+BUILD:
+docker buildx build --platform linux/amd64 -t mtmazurik/fluent-bit-bridge:0.1.1 -t mtmazurik/fluent-bit-bridge:latest --push .
+
+
+USAGE:  tags in any compute deployment (in your service/api/app deployment.yaml)
+-----------------------------
+yamlapiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cca-api
+  namespace: cca-api
+spec:
+  template:
+    metadata:
+      labels:
+        app: cca-api
+        type: api        # ← Add this label
+    spec:
+      containers:
+      - name: cca-api
+        # ... rest of container spec
+-----------------------------
+For services:
+spec:
+  template:
+    metadata:
+      labels:
+        app: my-service
+        type: service    # ← Add this label
+
+------------------------------
+To filter app/service log messages
+to mongo:   logging/logs
+
+bifurcates to send other k8s messages (kong, fluent-bit startup, etc.)
+to mongo:   logging/system-logs
+-------------------------------
+Deployment
+deployment .yaml file lives in mtmazurik ~ (home) 
+on admin node 
+so stores in separate repo :   sre-configuration/fluent-bit-bridge
+DEPLOY:
+kubectl apply -f fluent-bit-bridge.yaml
+kubectl apply -f configmap.yaml
+kubectl rollout restart daemonset/fluent-bit -n logging
+__________________________
+
+Architecture document see: fluentbit_mongo_design.docx file
+
