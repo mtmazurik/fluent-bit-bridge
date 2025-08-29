@@ -7,6 +7,17 @@ LOG ROUTING:
 BUILD:
 docker buildx build --platform linux/amd64 -t mtmazurik/fluent-bit-bridge:0.1.1 -t mtmazurik/fluent-bit-bridge:latest --push .
 
+NOTE:  in Mongo ["system-logs"] we set to only keep 2 days worth, app logs (1 week)
+// Auto-delete system logs after 2 days
+db["system-logs"].createIndex(
+  {"timestamp": 1}, 
+  {expireAfterSeconds: 172800}  // 2 days = 172800 seconds
+)
+// Auto-delete application logs after 1 week (7 days)
+db.logs.createIndex(
+  {"timestamp": 1}, 
+  {expireAfterSeconds: 604800}  // 7 days = 604800 seconds
+)
 
 USAGE:  tags in any compute deployment (in your service/api/app deployment.yaml)
 -----------------------------
